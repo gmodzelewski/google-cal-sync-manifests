@@ -1,0 +1,11 @@
+secretName: gocalsy-secret
+
+followChangesForBranch: main
+
+image:
+  repository: "quay.io/modzelewski/gocalsy"
+  tag: latest
+
+gitRepo: "https://github.com/gmodzelewski/google-cal-sync.git"
+containerfilePath: "src/main/docker/Containerfile"
+manifestsGitRepo: "https://github.com/gmodzelewski/google-cal-sync-manifests.git"

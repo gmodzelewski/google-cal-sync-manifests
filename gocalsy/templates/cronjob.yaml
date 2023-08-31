@@ -1,0 +1,28 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ include "gocalsy.fullname" . }}
+  labels:
+    {{- include "gocalsy.labels" . | nindent 4 }}
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: {{ include "gocalsy.serviceAccountName" . }}
+          containers:
+          - name: gocalsy
+            image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            env:
+            - name: SOURCE_CALENDAR_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: SOURCE_CALENDAR_ID
+            - name: TARGET_CALENDAR_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretName }}
+                  key: TARGET_CALENDAR_ID
+          restartPolicy: OnFailure

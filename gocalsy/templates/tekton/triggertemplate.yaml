@@ -1,0 +1,42 @@
+{{- if .Values.followChangesForBranch }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: {{ include "gocalsy.fullname" . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  params:
+    - name: content-type
+    - name: git-commit-message
+    - name: git-repo-url
+    - name: git-repo-name
+    - name: git-revision
+      description: The git revision. In trunkbased development, the release version.
+      default: main
+    - name: pusher-name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: {{ include "gocalsy.fullname" . }}-pipeline-
+        labels:
+          tekton.dev/pipeline: {{ include "gocalsy.fullname" . }}-pipeline
+      spec:
+        params:
+          - name: GIT_REPO
+            value: $(tt.params.git-repo-url)
+          - name: GIT_REVISION
+            value: $(tt.params.git-revision)
+          - name: GIT_COMMIT_MESSAGE
+            value: $(tt.params.git-commit-message)
+        pipelineRef:
+          name: {{ include "gocalsy.fullname" . }}-pipeline
+        workspaces:
+        - name: source
+          persistentVolumeClaim:
+            claimName: app-source
+        - name: maven-settings
+          persistentVolumeClaim:
+            claimName: build-cache-pvc
+{{- end }}

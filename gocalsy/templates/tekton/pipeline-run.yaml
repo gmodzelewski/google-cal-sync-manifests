@@ -1,0 +1,33 @@
+{{- if .Values.followChangesForBranch }}
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: {{ include "app.fullname" . }}-run-{{ .Release.Revision }}
+  labels:
+    tekton.dev/pipeline: {{ include "gocalsy.fullname" . }}-pipeline
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  params:
+    - name: IMAGE_TAG
+      value: {{ .Values.image.tag }}
+    - name: IMAGE_NAME
+      value: {{ .Values.image.repository }}
+    - name: GIT_REPO
+      value: {{ .Values.gitRepo }}
+    - name: GIT_BRANCH
+      value: {{ .Values.followChangesForBranch }}
+    - name: MANIFESTS_GIT_REPO
+      value: {{ .Values.manifestsGitRepo }}
+    - name: MANIFESTS_GIT_BRANCH
+      value: 'main'
+  pipelineRef:
+    name: {{ include "gocalsy.fullname" . }}-pipeline
+  workspaces:
+  - name: source
+    persistentVolumeClaim:
+      claimName: app-source
+  - name: maven-settings
+    persistentVolumeClaim:
+      claimName: build-cache-pvc
+{{- end }}

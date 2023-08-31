@@ -1,0 +1,22 @@
+{{- if .Values.followChangesForBranch }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: {{ include "gocalsy.fullname" . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  params:
+    - name: content-type
+      value: $(header.Content-Type)
+    - name: git-commit-message
+      value: $(body.head_commit.message)    
+    - name: git-repo-name
+      value: $(body.repository.name)
+    - name: git-repo-url
+      value: $(body.repository.url)
+    - name: git-revision
+      value: $(body.head_commit.id)
+    - name: pusher-name
+      value: $(body.pusher.name)
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if .Values.followChangesForBranch }}
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: {{ include "gocalsy.fullname" . }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  serviceAccountName: pipeline
+  triggers:
+  - bindings:
+    - ref: {{ include "gocalsy.fullname" . }}
+    template:
+      ref: {{ include "gocalsy.fullname" . }}
+    interceptors:
+    - params:
+        - name: filter
+          value: >-
+            (header.match('X-GitHub-Event', 'push') &&
+            body.ref.startsWith('refs/heads/{{ coalesce .Values.followChangesForBranch "main" }}'))
+        - name: overlays
+          value: null
+      ref:
+        kind: ClusterInterceptor
+        name: cel
+{{- end }}
